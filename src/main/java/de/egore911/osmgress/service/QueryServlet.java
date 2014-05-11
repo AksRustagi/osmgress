@@ -37,58 +37,52 @@ public class QueryServlet extends HttpServlet {
 		double lon_min = Double.parseDouble(req.getParameter("lon_min"));
 		double lon_max = Double.parseDouble(req.getParameter("lon_max"));
 
-		double lon = ((lon_max - lon_min) / 2) + lon_min;
-		double lat = ((lat_max - lat_min) / 2) + lat_min;
-
 		try {
 			Connection connection = DriverManager.getConnection(
 					"jdbc:postgresql://localhost/osmgress_mapnik", "osmgress",
 					"osmgress");
 
-			PreparedStatement statement = connection
+			PreparedStatement statementPoint = connection
 					.prepareStatement("SELECT osm_id, "
 							+ "name, "
-							+ "ST_Y (ST_Transform (way, 4326)), "
-							+ "ST_X (ST_Transform (way, 4326)), "
-							+ "ST_Distance(ST_Transform(way, 4326), ST_Geomfromtext('POINT("
-							+ lon + " " + lat + ")',4326)) as distance "
+							+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
+							+ "ST_X(ST_Transform(way, 4326)) as longitude "
 							+ "FROM planet_osm_point "
-							+ "WHERE amenity='place_of_worship' "
-							+ "AND ST_Y (ST_Transform (way, 4326)) > "
-							+ lat_min + " "
-							+ "AND ST_Y (ST_Transform (way, 4326)) < "
-							+ lat_max + " "
-							+ "AND ST_X (ST_Transform (way, 4326)) > "
-							+ lon_min + " "
-							+ "AND ST_X (ST_Transform (way, 4326)) < "
-							+ lon_max + " " + "ORDER BY distance ASC");
-			ResultSet resultSet = statement.executeQuery();
+							+ "WHERE (amenity='place_of_worship' OR amenity='hospital') "
+							+ "AND ST_Y(ST_Transform(way, 4326)) > " + lat_min + " "
+							+ "AND ST_Y(ST_Transform(way, 4326)) < " + lat_max + " "
+							+ "AND ST_X(ST_Transform(way, 4326)) > " + lon_min + " "
+							+ "AND ST_X(ST_Transform(way, 4326)) < " + lon_max);
+			ResultSet resultSetPoint = statementPoint.executeQuery();
+			PreparedStatement statementPolygon = connection
+					.prepareStatement("SELECT osm_id, "
+							+ "name, "
+							+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
+							+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude "
+							+ "FROM planet_osm_polygon "
+							+ "WHERE (amenity='place_of_worship' OR amenity='hospital') "
+							+ "AND ST_YMax(ST_Transform(way, 4326)) > " + lat_min + " "
+							+ "AND ST_YMin(ST_Transform(way, 4326)) < " + lat_max + " "
+							+ "AND ST_XMax(ST_Transform(way, 4326)) > " + lon_min + " "
+							+ "AND ST_XMin(ST_Transform(way, 4326)) < " + lon_max);
+			ResultSet resultSetPolygon = statementPolygon.executeQuery();
 
 			PrintWriter writer = resp.getWriter();
 
 			writer.print("[\n");
 			boolean first = true;
-			while (resultSet.next()) {
+			while (resultSetPoint.next()) {
 				if (!first) {
 					writer.print(",\n");
 				}
-				writer.print("  {\"id\":");
-				long id = resultSet.getLong(1);
-				writer.print(id);
-				writer.print(",\"name\":");
-				String name = resultSet.getString(2);
-				writer.print(name == null ? "null" : "\""
-						+ name.replace("\"", "\\\"") + "\"");
-				writer.print(",\"latitude\":");
-				double latitude = resultSet.getDouble(3);
-				writer.print(latitude);
-				writer.print(",\"longitude\":");
-				double longitude = resultSet.getDouble(4);
-				writer.print(longitude);
-				writer.print(",\"distance\":");
-				double distance = resultSet.getDouble(5);
-				writer.print(distance);
-				writer.print("}");
+				convertToJson(resultSetPoint, writer);
+				first = false;
+			}
+			while (resultSetPolygon.next()) {
+				if (!first) {
+					writer.print(",\n");
+				}
+				convertToJson(resultSetPolygon, writer);
 				first = false;
 			}
 			writer.print("\n]");
@@ -99,6 +93,24 @@ public class QueryServlet extends HttpServlet {
 			throw new ServletException(e);
 		}
 
+	}
+
+	private void convertToJson(ResultSet resultSetPoint, PrintWriter writer)
+			throws SQLException {
+		writer.print("  {\"id\":");
+		long id = resultSetPoint.getLong(1);
+		writer.print(id);
+		writer.print(",\"name\":");
+		String name = resultSetPoint.getString(2);
+		writer.print(name == null ? "null" : "\""
+				+ name.replace("\"", "\\\"") + "\"");
+		writer.print(",\"latitude\":");
+		double latitude = resultSetPoint.getDouble(3);
+		writer.print(latitude);
+		writer.print(",\"longitude\":");
+		double longitude = resultSetPoint.getDouble(4);
+		writer.print(longitude);
+		writer.print("}");
 	}
 
 }
