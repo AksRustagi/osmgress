@@ -29,9 +29,12 @@ public class QueryServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		
+
 		resp.setContentType("application/json; charset=UTF-8");
-		
+
+		double lat = 50.356718;
+		double lon = 7.599485;
+
 		try {
 			Connection connection = DriverManager.getConnection(
 					"jdbc:postgresql://localhost/osmgress_mapnik", "osmgress",
@@ -40,16 +43,17 @@ public class QueryServlet extends HttpServlet {
 			PreparedStatement statement = connection
 					.prepareStatement("SELECT osm_id, "
 							+ "name, "
-							+ "ST_X (ST_Transform (way, 4326)), "
 							+ "ST_Y (ST_Transform (way, 4326)), "
-							+ "ST_Distance(ST_Transform(way, 4326), ST_Geomfromtext('POINT(7.599485 50.356718)',4326)) as distance "
+							+ "ST_X (ST_Transform (way, 4326)), "
+							+ "ST_Distance(ST_Transform(way, 4326), ST_Geomfromtext('POINT("
+							+ lon + " " + lat + ")',4326)) as distance "
 							+ "FROM planet_osm_point "
 							+ "WHERE amenity='place_of_worship' "
 							+ "ORDER BY distance ASC " + "LIMIT 100");
 			ResultSet resultSet = statement.executeQuery();
-			
+
 			PrintWriter writer = resp.getWriter();
-			
+
 			writer.print("[\n");
 			boolean first = true;
 			while (resultSet.next()) {
@@ -61,13 +65,14 @@ public class QueryServlet extends HttpServlet {
 				writer.print(id);
 				writer.print(",\"name\":");
 				String name = resultSet.getString(2);
-				writer.print(name == null ? "null" : "\"" + name.replace("\"", "\\\"") + "\"");
-				writer.print(",\"x\":");
-				double x = resultSet.getDouble(3);
-				writer.print(x);
-				writer.print(",\"y\":");
-				double y = resultSet.getDouble(4);
-				writer.print(y);
+				writer.print(name == null ? "null" : "\""
+						+ name.replace("\"", "\\\"") + "\"");
+				writer.print(",\"latitude\":");
+				double latitude = resultSet.getDouble(3);
+				writer.print(latitude);
+				writer.print(",\"longitude\":");
+				double longitude = resultSet.getDouble(4);
+				writer.print(longitude);
 				writer.print(",\"distance\":");
 				double distance = resultSet.getDouble(5);
 				writer.print(distance);

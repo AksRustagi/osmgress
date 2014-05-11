@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>osmgress</title>
+<link rel="stylesheet"
+	href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<style type="text/css">
+#map {
+	height: 500px;
+}
+</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script type="text/javascript">
+		$(function() {
+			var map = L.map('map').setView([ 50.356718, 7.599485 ], 13);
+			L
+					.tileLayer(
+							'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+							{
+								attribution : 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+								maxZoom : 18
+							}).addTo(map);
+
+			$.getJSON("query", function(data) {
+				var markerArray = new Array();
+				$.each(data, function(key, val) {
+					console.log(val);
+					var marker = L.marker([ val.latitude, val.longitude ]).addTo(map);
+					if (val.name != undefined) {
+						marker.bindPopup("<b>" + val.name + "</b>");
+					}
+					markerArray.push(marker);
+				});
+				var group = new L.featureGroup(markerArray);
+				map.fitBounds(group.getBounds());
+			});
+		});
+	</script>
+</body>
+</html>
