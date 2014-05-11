@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -95,7 +96,7 @@ public class QueryServlet extends HttpServlet {
 
 	}
 
-	private void convertToJson(ResultSet resultSetPoint, PrintWriter writer)
+	private void convertToJson(@Nonnull ResultSet resultSetPoint, @Nonnull PrintWriter writer)
 			throws SQLException {
 		writer.print("  {\"id\":");
 		long id = resultSetPoint.getLong(1);
