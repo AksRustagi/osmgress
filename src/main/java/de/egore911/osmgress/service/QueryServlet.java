@@ -49,21 +49,31 @@ public class QueryServlet extends HttpServlet {
 							+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
 							+ "ST_X(ST_Transform(way, 4326)) as longitude "
 							+ "FROM planet_osm_point "
-							+ "WHERE (amenity='place_of_worship' OR amenity='hospital') "
-							+ "AND ST_Y(ST_Transform(way, 4326)) > " + lat_min + " "
-							+ "AND ST_Y(ST_Transform(way, 4326)) < " + lat_max + " "
-							+ "AND ST_X(ST_Transform(way, 4326)) > " + lon_min + " "
-							+ "AND ST_X(ST_Transform(way, 4326)) < " + lon_max + " UNION "
+							+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+							+ "AND ST_Y(ST_Transform(way, 4326)) > ? "
+							+ "AND ST_Y(ST_Transform(way, 4326)) < ? "
+							+ "AND ST_X(ST_Transform(way, 4326)) > ? "
+							+ "AND ST_X(ST_Transform(way, 4326)) < ? UNION "
 							+ "SELECT osm_id, "
 							+ "name, "
 							+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
 							+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude "
 							+ "FROM planet_osm_polygon "
-							+ "WHERE (amenity='place_of_worship' OR amenity='hospital') "
-							+ "AND ST_YMax(ST_Transform(way, 4326)) > " + lat_min + " "
-							+ "AND ST_YMin(ST_Transform(way, 4326)) < " + lat_max + " "
-							+ "AND ST_XMax(ST_Transform(way, 4326)) > " + lon_min + " "
-							+ "AND ST_XMin(ST_Transform(way, 4326)) < " + lon_max);
+							+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+							+ "AND ST_YMax(ST_Transform(way, 4326)) > ? "
+							+ "AND ST_YMin(ST_Transform(way, 4326)) < ? "
+							+ "AND ST_XMax(ST_Transform(way, 4326)) > ? "
+							+ "AND ST_XMin(ST_Transform(way, 4326)) < ?");
+
+			statement.setDouble(1, lat_min);
+			statement.setDouble(2, lat_max);
+			statement.setDouble(3, lon_min);
+			statement.setDouble(4, lon_max);
+			statement.setDouble(5, lat_min);
+			statement.setDouble(6, lat_max);
+			statement.setDouble(7, lon_min);
+			statement.setDouble(8, lon_max);
+
 			ResultSet resultSet = statement.executeQuery();
 
 			PrintWriter writer = resp.getWriter();
