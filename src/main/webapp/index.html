@@ -15,6 +15,22 @@
 <body>
 	<div id="map"></div>
 	<script type="text/javascript">
+		var lookup = {};
+
+		function load(bounds, map) {
+			$.getJSON("query?lat_min=" + bounds.getSouth() + "&lat_max="
+					+ bounds.getNorth() + "&lon_min=" + bounds.getWest()
+					+ "&lon_max=" + bounds.getEast(), function(data) {
+				$.each(data, function(key, val) {
+					var marker = L.marker([ val.latitude, val.longitude ])
+							.addTo(map);
+					if (val.name != undefined) {
+						marker.bindPopup("<b>" + val.name + "</b>");
+					}
+				});
+			});
+		}
+
 		$(function() {
 			var map = L.map('map').setView([ 50.356718, 7.599485 ], 13);
 			L
@@ -25,19 +41,9 @@
 								maxZoom : 18
 							}).addTo(map);
 
-			$.getJSON("query", function(data) {
-				var markerArray = new Array();
-				$.each(data, function(key, val) {
-					console.log(val);
-					var marker = L.marker([ val.latitude, val.longitude ]).addTo(map);
-					if (val.name != undefined) {
-						marker.bindPopup("<b>" + val.name + "</b>");
-					}
-					markerArray.push(marker);
-				});
-				var group = new L.featureGroup(markerArray);
-				map.fitBounds(group.getBounds());
-			});
+			var bounds = map.getBounds();
+			load(bounds, map);
+
 		});
 	</script>
 </body>

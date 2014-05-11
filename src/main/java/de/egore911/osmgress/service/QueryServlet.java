@@ -32,8 +32,13 @@ public class QueryServlet extends HttpServlet {
 
 		resp.setContentType("application/json; charset=UTF-8");
 
-		double lat = 50.356718;
-		double lon = 7.599485;
+		double lat_min = Double.parseDouble(req.getParameter("lat_min"));
+		double lat_max = Double.parseDouble(req.getParameter("lat_max"));
+		double lon_min = Double.parseDouble(req.getParameter("lon_min"));
+		double lon_max = Double.parseDouble(req.getParameter("lon_max"));
+
+		double lon = ((lon_max - lon_min) / 2) + lon_min;
+		double lat = ((lat_max - lat_min) / 2) + lat_min;
 
 		try {
 			Connection connection = DriverManager.getConnection(
@@ -49,7 +54,14 @@ public class QueryServlet extends HttpServlet {
 							+ lon + " " + lat + ")',4326)) as distance "
 							+ "FROM planet_osm_point "
 							+ "WHERE amenity='place_of_worship' "
-							+ "ORDER BY distance ASC " + "LIMIT 100");
+							+ "AND ST_Y (ST_Transform (way, 4326)) > "
+							+ lat_min + " "
+							+ "AND ST_Y (ST_Transform (way, 4326)) < "
+							+ lat_max + " "
+							+ "AND ST_X (ST_Transform (way, 4326)) > "
+							+ lon_min + " "
+							+ "AND ST_X (ST_Transform (way, 4326)) < "
+							+ lon_max + " " + "ORDER BY distance ASC");
 			ResultSet resultSet = statement.executeQuery();
 
 			PrintWriter writer = resp.getWriter();
