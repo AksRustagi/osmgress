@@ -24,6 +24,7 @@ html,body {
 <body>
 	<div id="map"></div>
 	<script type="text/javascript">
+		var map;
 		var lookup = {};
 
 		function load(map) {
@@ -44,8 +45,18 @@ html,body {
 			});
 		}
 
+		function zoomToPosition(position) {
+			map
+					.setView([ position.coords.latitude,
+							position.coords.longitude ], 13);
+		}
+
 		$(function() {
-			var map = L.map('map').setView([ 50.356718, 7.599485 ], 13);
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(zoomToPosition);
+			}
+
+			map = L.map('map').setView([ 50.356718, 7.599485 ], 13);
 			L
 					.tileLayer(
 							'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
