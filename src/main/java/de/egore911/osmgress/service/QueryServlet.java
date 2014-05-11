@@ -43,7 +43,7 @@ public class QueryServlet extends HttpServlet {
 					"jdbc:postgresql://localhost/osmgress_mapnik", "osmgress",
 					"osmgress");
 
-			PreparedStatement statementPoint = connection
+			PreparedStatement statement = connection
 					.prepareStatement("SELECT osm_id, "
 							+ "name, "
 							+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
@@ -53,10 +53,8 @@ public class QueryServlet extends HttpServlet {
 							+ "AND ST_Y(ST_Transform(way, 4326)) > " + lat_min + " "
 							+ "AND ST_Y(ST_Transform(way, 4326)) < " + lat_max + " "
 							+ "AND ST_X(ST_Transform(way, 4326)) > " + lon_min + " "
-							+ "AND ST_X(ST_Transform(way, 4326)) < " + lon_max);
-			ResultSet resultSetPoint = statementPoint.executeQuery();
-			PreparedStatement statementPolygon = connection
-					.prepareStatement("SELECT osm_id, "
+							+ "AND ST_X(ST_Transform(way, 4326)) < " + lon_max + " UNION "
+							+ "SELECT osm_id, "
 							+ "name, "
 							+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
 							+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude "
@@ -66,24 +64,17 @@ public class QueryServlet extends HttpServlet {
 							+ "AND ST_YMin(ST_Transform(way, 4326)) < " + lat_max + " "
 							+ "AND ST_XMax(ST_Transform(way, 4326)) > " + lon_min + " "
 							+ "AND ST_XMin(ST_Transform(way, 4326)) < " + lon_max);
-			ResultSet resultSetPolygon = statementPolygon.executeQuery();
+			ResultSet resultSet = statement.executeQuery();
 
 			PrintWriter writer = resp.getWriter();
 
 			writer.print("[\n");
 			boolean first = true;
-			while (resultSetPoint.next()) {
+			while (resultSet.next()) {
 				if (!first) {
 					writer.print(",\n");
 				}
-				convertToJson(resultSetPoint, writer);
-				first = false;
-			}
-			while (resultSetPolygon.next()) {
-				if (!first) {
-					writer.print(",\n");
-				}
-				convertToJson(resultSetPolygon, writer);
+				convertToJson(resultSet, writer);
 				first = false;
 			}
 			writer.print("\n]");
@@ -96,15 +87,15 @@ public class QueryServlet extends HttpServlet {
 
 	}
 
-	private void convertToJson(@Nonnull ResultSet resultSetPoint, @Nonnull PrintWriter writer)
-			throws SQLException {
+	private void convertToJson(@Nonnull ResultSet resultSetPoint,
+			@Nonnull PrintWriter writer) throws SQLException {
 		writer.print("  {\"id\":");
 		long id = resultSetPoint.getLong(1);
 		writer.print(id);
 		writer.print(",\"name\":");
 		String name = resultSetPoint.getString(2);
-		writer.print(name == null ? "null" : "\""
-				+ name.replace("\"", "\\\"") + "\"");
+		writer.print(name == null ? "null" : "\"" + name.replace("\"", "\\\"")
+				+ "\"");
 		writer.print(",\"latitude\":");
 		double latitude = resultSetPoint.getDouble(3);
 		writer.print(latitude);
