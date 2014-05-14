@@ -1,0 +1,153 @@
+{
+  "bounds": [
+    -180,
+    -85.0511,
+    180,
+    85.0511
+  ],
+  "center": [
+    8.3496,
+    50.3174,
+    5
+  ],
+  "format": "png8",
+  "interactivity": false,
+  "minzoom": 0,
+  "maxzoom": 22,
+  "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+  "Stylesheet": [
+    "style.mss"
+  ],
+  "Layer": [
+    {
+      "id": "countries",
+      "name": "countries",
+      "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+      "geometry": "polygon",
+      "Datasource": {
+        "file": "http://mapbox-geodata.s3.amazonaws.com/natural-earth-1.4.0/cultural/10m-admin-0-countries.zip",
+        "type": "shape"
+      }
+    },
+    {
+      "geometry": "linestring",
+      "extent": [
+        6.012462914000703,
+        48.72571338461147,
+        8.734133915556408,
+        50.95700400425011
+      ],
+      "Datasource": {
+        "type": "postgis",
+        "table": "(select * from planet_osm_line where highway like 'path' or highway like 'service' or highway like 'living_street' or highway like 'unclassified' or highway like 'cycleway') as minor_roads",
+        "key_field": "osm_id",
+        "geometry_field": "way",
+        "extent_cache": "auto",
+        "extent": "669304.31,6228448.2,972279.34,6613691.75",
+        "dbname": "osmgress_mapnik",
+        "host": "localhost",
+        "port": "5432",
+        "user": "osmgress",
+        "password": "osmgress",
+        "id": "paths",
+        "project": "osmgress",
+        "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
+      },
+      "id": "minor_roads",
+      "class": "",
+      "srs-name": "900913",
+      "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+      "advanced": {},
+      "name": "minor_roads"
+    },
+    {
+      "geometry": "linestring",
+      "extent": [
+        6.012462914000703,
+        48.72571338461147,
+        8.734133915556408,
+        50.95700400425011
+      ],
+      "Datasource": {
+        "type": "postgis",
+        "table": "(select * from planet_osm_line where highway like 'motorway%' or highway like 'primary%' or highway like 'secondary%' or highway  like 'trunk%') as major_roads",
+        "key_field": "osm_id",
+        "geometry_field": "way",
+        "extent_cache": "auto",
+        "extent": "669304.31,6228448.2,972279.34,6613691.75",
+        "dbname": "osmgress_mapnik",
+        "host": "localhost",
+        "port": "5432",
+        "user": "osmgress",
+        "password": "osmgress"
+      },
+      "id": "major_roads",
+      "class": "",
+      "srs-name": "900913",
+      "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+      "advanced": {},
+      "name": "major_roads"
+    },
+    {
+      "geometry": "linestring",
+      "extent": [
+        6.012462914000703,
+        48.72571338461147,
+        8.734133915556408,
+        50.95700400425011
+      ],
+      "Datasource": {
+        "type": "postgis",
+        "table": "(select * from planet_osm_line where highway like 'tertiary%' or highway like 'residential%') as roads",
+        "key_field": "osm_id",
+        "geometry_field": "way",
+        "extent_cache": "auto",
+        "extent": "669304.31,6228448.2,972279.34,6613691.75",
+        "dbname": "osmgress_mapnik",
+        "host": "localhost",
+        "port": "5432",
+        "user": "osmgress",
+        "password": "osmgress"
+      },
+      "id": "roads",
+      "class": "",
+      "srs-name": "900913",
+      "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+      "advanced": {},
+      "name": "roads"
+    },
+    {
+      "geometry": "polygon",
+      "extent": [
+        6.069323756202673,
+        48.93462921565534,
+        8.558457492131897,
+        50.95888101010522
+      ],
+      "Datasource": {
+        "type": "postgis",
+        "table": "(select * from planet_osm_polygon where building is not null) as buildings",
+        "key_field": "osm_id",
+        "geometry_field": "way",
+        "extent_cache": "auto",
+        "extent": "675634.03,6263776.61,952723.13,6614023.47",
+        "dbname": "osmgress_mapnik",
+        "host": "localhost",
+        "port": "5432",
+        "user": "osmgress",
+        "password": "osmgress"
+      },
+      "id": "buildings",
+      "class": "",
+      "srs-name": "900913",
+      "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+      "advanced": {},
+      "name": "buildings"
+    }
+  ],
+  "scale": 1,
+  "metatile": 2,
+  "name": "",
+  "description": "",
+  "attribution": ""
+}
