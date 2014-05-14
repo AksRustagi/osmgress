@@ -1,10 +1,10 @@
 Map {
-  background-color: #b8dee6;
+  background-color: #333;
 }
 
 #countries {
   ::outline {
-    line-color: #85c5d3;
+    line-color: #444;
     line-width: 2;
     line-join: round;
   }
