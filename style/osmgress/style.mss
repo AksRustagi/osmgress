@@ -16,16 +16,15 @@ Map {
   line-color:#888;
 }
 
-#major_roads {
-  line-width:4;
-  line-color:#888;
-}
-
 #roads {
   line-width:2;
   line-color:#888;
 }
 
+#major_roads {
+  line-width:4;
+  line-color:#888;
+}
 
 #buildings {
   line-color:#444;

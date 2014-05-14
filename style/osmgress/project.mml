@@ -39,7 +39,7 @@
       ],
       "Datasource": {
         "type": "postgis",
-        "table": "(select * from planet_osm_line where highway like 'path' or highway like 'service' or highway like 'living_street' or highway like 'unclassified' or highway like 'cycleway') as minor_roads",
+        "table": "(select *\n from planet_osm_line\n where highway like 'path'\n or highway like 'service'\n or highway like 'living_street'\n or highway like 'unclassified'\n or highway like 'cycleway') as minor_roads",
         "key_field": "osm_id",
         "geometry_field": "way",
         "extent_cache": "auto",
@@ -70,7 +70,7 @@
       ],
       "Datasource": {
         "type": "postgis",
-        "table": "(select * from planet_osm_line where highway like 'motorway%' or highway like 'primary%' or highway like 'secondary%' or highway  like 'trunk%') as major_roads",
+        "table": "(select *\n from planet_osm_line\n where highway like 'motorway%'\n or highway like 'primary%'\n or highway like 'secondary%'\n or highway  like 'trunk%') as major_roads",
         "key_field": "osm_id",
         "geometry_field": "way",
         "extent_cache": "auto",
@@ -98,7 +98,7 @@
       ],
       "Datasource": {
         "type": "postgis",
-        "table": "(select * from planet_osm_line where highway like 'tertiary%' or highway like 'residential%') as roads",
+        "table": "(select *\n from planet_osm_line\n where highway like 'tertiary%'\n or highway like 'residential%'\n or (highway <> 'path'\n  and highway <> 'service'\n  and highway <> 'living_street'\n  and highway <> 'unclassified'\n  and highway <> 'cycleway'\n  and highway not like 'motorway%'\n  and highway not like 'primary%'\n  and highway not like 'secondary%'\n  and highway not like 'trunk%')) as roads",
         "key_field": "osm_id",
         "geometry_field": "way",
         "extent_cache": "auto",
