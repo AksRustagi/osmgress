@@ -14,6 +14,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonWriter;
+
 public class QueryServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 6670846638516835427L;
@@ -76,18 +83,15 @@ public class QueryServlet extends HttpServlet {
 
 			ResultSet resultSet = statement.executeQuery();
 
-			PrintWriter writer = resp.getWriter();
+			JsonArray jsonArray = new JsonArray();
 
-			writer.print("[\n");
-			boolean first = true;
 			while (resultSet.next()) {
-				if (!first) {
-					writer.print(",\n");
-				}
-				convertToJson(resultSet, writer);
-				first = false;
+				jsonArray.add(convertToJson(resultSet));
 			}
-			writer.print("\n]");
+			PrintWriter writer = resp.getWriter();
+			JsonWriter jsonWriter = new JsonWriter(writer);
+			jsonWriter.setLenient(true);
+			Streams.write(jsonArray, jsonWriter);
 
 			connection.close();
 
@@ -97,22 +101,18 @@ public class QueryServlet extends HttpServlet {
 
 	}
 
-	private void convertToJson(@Nonnull ResultSet resultSetPoint,
-			@Nonnull PrintWriter writer) throws SQLException {
-		writer.print("  {\"id\":");
+	private JsonObject convertToJson(@Nonnull ResultSet resultSetPoint)
+			throws SQLException {
+		JsonObject jsonObject = new JsonObject();
 		long id = resultSetPoint.getLong(1);
-		writer.print(id);
-		writer.print(",\"name\":");
+		jsonObject.add("id", new JsonPrimitive(id));
 		String name = resultSetPoint.getString(2);
-		writer.print(name == null ? "null" : "\"" + name.replace("\"", "\\\"")
-				+ "\"");
-		writer.print(",\"latitude\":");
+		jsonObject.add("name", name == null ? JsonNull.INSTANCE : new JsonPrimitive(name));
 		double latitude = resultSetPoint.getDouble(3);
-		writer.print(latitude);
-		writer.print(",\"longitude\":");
+		jsonObject.add("latitude", new JsonPrimitive(latitude));
 		double longitude = resultSetPoint.getDouble(4);
-		writer.print(longitude);
-		writer.print("}");
+		jsonObject.add("longitude", new JsonPrimitive(longitude));
+		return jsonObject;
 	}
 
 }
