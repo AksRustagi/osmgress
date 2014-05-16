@@ -69,9 +69,14 @@ html,body {
 					if (lookup[val.id] == undefined) {
 						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.faction)})
 								.addTo(map);
+						var label = "<b>";
 						if (val.name != undefined) {
-							marker.bindPopup("<b>" + val.name + "</b>");
+							label += val.name;
+						} else {
+							label += "?"
 						}
+						label += "</b><br/>" + val.id;
+						marker.bindPopup(label);
 						lookup[val.id] = marker;
 					}
 				});
