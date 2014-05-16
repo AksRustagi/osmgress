@@ -5,6 +5,8 @@ CREATE TABLE osmg_user (
   CONSTRAINT osmg_user_pkey PRIMARY KEY (id),
   CONSTRAINT osmg_user_name_key UNIQUE (name)
 ) WITH (OIDS=FALSE);
+ALTER TABLE osmg_user OWNER TO osmgress;
+GRANT ALL ON TABLE osmg_user TO postgres;
 
 CREATE TABLE osmg_portal(
   osm_id bigint NOT NULL,
@@ -14,6 +16,8 @@ CREATE TABLE osmg_portal(
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT osmg_portal_osm_id_key UNIQUE (osm_id)
 ) WITH (OIDS=FALSE);
+ALTER TABLE osmg_portal OWNER TO osmgress;
+GRANT ALL ON TABLE osmg_portal TO postgres;
 
 CREATE TABLE osmg_link(
   id bigserial NOT NULL,
@@ -26,4 +30,6 @@ CREATE TABLE osmg_link(
       REFERENCES osmg_portal (osm_id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
 ) WITH (OIDS=FALSE);
+ALTER TABLE osmg_link OWNER TO osmgress;
+GRANT ALL ON TABLE osmg_link TO postgres;
 
