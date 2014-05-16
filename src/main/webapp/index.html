@@ -24,6 +24,30 @@ html,body {
 <body>
 	<div id="map"></div>
 	<script type="text/javascript">
+
+		var blue8 = L.icon({
+			iconUrl: 'images/blue8_32.png',
+			iconRetinaUrl: 'images/blue8_64.png',
+		    iconSize: [32, 32],
+		    iconAnchor: [16, 16],
+		    popupAnchor: [0, -20],
+		    /*shadowUrl: 'my-icon-shadow.png',
+		    shadowRetinaUrl: 'my-icon-shadow@2x.png',
+		    shadowSize: [68, 95],
+		    shadowAnchor: [22, 94]*/
+		});
+		var green8 = L.icon({
+			iconUrl: 'images/green8_32.png',
+			iconRetinaUrl: 'images/green8_64.png',
+		    iconSize: [32, 32],
+		    iconAnchor: [16, -20],
+		    popupAnchor: [0, 0],
+		    /*shadowUrl: 'my-icon-shadow.png',
+		    shadowRetinaUrl: 'my-icon-shadow@2x.png',
+		    shadowSize: [68, 95],
+		    shadowAnchor: [22, 94]*/
+		});
+
 		var map;
 		var lookup = {};
 
@@ -34,7 +58,7 @@ html,body {
 					+ "&lon_max=" + bounds.getEast(), function(data) {
 				$.each(data, function(key, val) {
 					if (lookup[val.id] == undefined) {
-						var marker = L.marker([ val.latitude, val.longitude ])
+						var marker = L.marker([ val.latitude, val.longitude ], {icon: blue8})
 								.addTo(map);
 						if (val.name != undefined) {
 							marker.bindPopup("<b>" + val.name + "</b>");
