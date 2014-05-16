@@ -1,6 +1,7 @@
 package de.egore911.osmgress.service;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,8 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
@@ -25,18 +28,43 @@ import de.egore911.osmgress.http.ConnectionFilter;
 public class QueryServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 6670846638516835427L;
-	
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		JsonParser parser = new JsonParser();
+		JsonElement jsonElement = parser.parse(new InputStreamReader(req
+				.getInputStream()));
+
+		if (jsonElement.isJsonObject()) {
+			JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+			double lat_min = jsonObject.get("lat_min").getAsDouble();
+			double lat_max = jsonObject.get("lat_max").getAsDouble();
+			double lon_min = jsonObject.get("lon_min").getAsDouble();
+			double lon_max = jsonObject.get("lon_max").getAsDouble();
+
+			loadPortals(resp, lat_min, lat_max, lon_min, lon_max);
+		}
+
+	}
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-
-		resp.setContentType("application/json; charset=UTF-8");
 
 		double lat_min = Double.parseDouble(req.getParameter("lat_min"));
 		double lat_max = Double.parseDouble(req.getParameter("lat_max"));
 		double lon_min = Double.parseDouble(req.getParameter("lon_min"));
 		double lon_max = Double.parseDouble(req.getParameter("lon_max"));
 
+		loadPortals(resp, lat_min, lat_max, lon_min, lon_max);
+	}
+
+	private void loadPortals(HttpServletResponse resp, double lat_min,
+			double lat_max, double lon_min, double lon_max) throws IOException,
+			ServletException {
 		try {
 			Connection connection = ConnectionFilter.getConnection();
 
@@ -77,6 +105,7 @@ public class QueryServlet extends HttpServlet {
 						jsonArray.add(convertToJson(resultSet));
 					}
 				}
+				resp.setContentType("application/json; charset=UTF-8");
 				PrintWriter writer = resp.getWriter();
 				JsonWriter jsonWriter = new JsonWriter(writer);
 				jsonWriter.setLenient(true);
@@ -85,7 +114,6 @@ public class QueryServlet extends HttpServlet {
 		} catch (SQLException e) {
 			throw new ServletException(e);
 		}
-
 	}
 
 	private JsonObject convertToJson(@Nonnull ResultSet resultSetPoint)
