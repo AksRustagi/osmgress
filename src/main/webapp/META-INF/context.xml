@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+	<Resource name="jdbc/osmgress_mapnik" auth="Container"
+		type="javax.sql.DataSource" maxActive="100" maxIdle="30" maxWait="10000"
+		username="osmgress" password="osmgress" driverClassName="org.postgresql.Driver"
+		url="jdbc:postgresql://localhost/osmgress_mapnik" />
+
+</Context>

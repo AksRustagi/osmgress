@@ -23,7 +23,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 
-import de.egore911.osmgress.http.ConnectionFilter;
+import de.egore911.osmgress.ConnectionFactory;
 
 public class QueryServlet extends HttpServlet {
 
@@ -65,9 +65,7 @@ public class QueryServlet extends HttpServlet {
 	private void loadPortals(HttpServletResponse resp, double lat_min,
 			double lat_max, double lon_min, double lon_max) throws IOException,
 			ServletException {
-		try {
-			Connection connection = ConnectionFilter.getConnection();
-
+		try (Connection connection = ConnectionFactory.getConnection()) {
 			try (PreparedStatement statement = connection
 					.prepareStatement("SELECT osm_id, "
 							+ "name, "
