@@ -16,7 +16,7 @@ public class Startup implements ServletContextListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Startup.class);
 
-	String CREATE_MISSING_PORTALS = "INSERT INTO osmg_portal (osm_id) "
+	private static final String CREATE_MISSING_PORTALS = "INSERT INTO osmg_portal (osm_id) "
 			+ "SELECT osm_id "
 			+ "FROM planet_osm_point "
 			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
