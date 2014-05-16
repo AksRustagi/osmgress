@@ -29,6 +29,34 @@ public class QueryServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 6670846638516835427L;
 
+	private static final String SELECT_PORTALS = "SELECT planet_osm_point.osm_id, "
+			+ "planet_osm_point.name, "
+			+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
+			+ "ST_X(ST_Transform(way, 4326)) as longitude, "
+			+ "faction "
+			+ "FROM planet_osm_point "
+			+ "LEFT OUTER JOIN osmg_portal ON planet_osm_point.osm_id = osmg_portal.osm_id "
+			+ "LEFT OUTER JOIN osmg_user ON osmg_portal.owner_id = osmg_user.id "
+			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+			+ "AND ST_Y(ST_Transform(way, 4326)) > ? "
+			+ "AND ST_Y(ST_Transform(way, 4326)) < ? "
+			+ "AND ST_X(ST_Transform(way, 4326)) > ? "
+			+ "AND ST_X(ST_Transform(way, 4326)) < ? "
+			+ "UNION "
+			+ "SELECT planet_osm_polygon.osm_id, "
+			+ "planet_osm_polygon.name, "
+			+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
+			+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude, "
+			+ "faction "
+			+ "FROM planet_osm_polygon "
+			+ "LEFT OUTER JOIN osmg_portal ON planet_osm_polygon.osm_id = osmg_portal.osm_id "
+			+ "LEFT OUTER JOIN osmg_user ON osmg_portal.owner_id = osmg_user.id "
+			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+			+ "AND ST_YMax(ST_Transform(way, 4326)) > ? "
+			+ "AND ST_YMin(ST_Transform(way, 4326)) < ? "
+			+ "AND ST_XMax(ST_Transform(way, 4326)) > ? "
+			+ "AND ST_XMin(ST_Transform(way, 4326)) < ?";
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -67,26 +95,7 @@ public class QueryServlet extends HttpServlet {
 			ServletException {
 		try (Connection connection = ConnectionFactory.getConnection()) {
 			try (PreparedStatement statement = connection
-					.prepareStatement("SELECT osm_id, "
-							+ "name, "
-							+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
-							+ "ST_X(ST_Transform(way, 4326)) as longitude "
-							+ "FROM planet_osm_point "
-							+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
-							+ "AND ST_Y(ST_Transform(way, 4326)) > ? "
-							+ "AND ST_Y(ST_Transform(way, 4326)) < ? "
-							+ "AND ST_X(ST_Transform(way, 4326)) > ? "
-							+ "AND ST_X(ST_Transform(way, 4326)) < ? UNION "
-							+ "SELECT osm_id, "
-							+ "name, "
-							+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
-							+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude "
-							+ "FROM planet_osm_polygon "
-							+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
-							+ "AND ST_YMax(ST_Transform(way, 4326)) > ? "
-							+ "AND ST_YMin(ST_Transform(way, 4326)) < ? "
-							+ "AND ST_XMax(ST_Transform(way, 4326)) > ? "
-							+ "AND ST_XMin(ST_Transform(way, 4326)) < ?")) {
+					.prepareStatement(SELECT_PORTALS)) {
 
 				statement.setDouble(1, lat_min);
 				statement.setDouble(2, lat_max);
@@ -126,6 +135,9 @@ public class QueryServlet extends HttpServlet {
 		jsonObject.add("latitude", new JsonPrimitive(latitude));
 		double longitude = resultSetPoint.getDouble(4);
 		jsonObject.add("longitude", new JsonPrimitive(longitude));
+		String faction = resultSetPoint.getString(5);
+		jsonObject.add("faction", faction == null ? JsonNull.INSTANCE
+				: new JsonPrimitive(faction));
 		return jsonObject;
 	}
 

@@ -39,9 +39,26 @@ html,body {
 		    iconAnchor: [16, 16],
 		    popupAnchor: [0, -20]
 		});
+		var gray8 = L.icon({
+			iconUrl: 'images/gray8_32.png',
+			iconRetinaUrl: 'images/gray8_64.png',
+		    iconSize: [32, 32],
+		    iconAnchor: [16, 16],
+		    popupAnchor: [0, -20]
+		});
 
 		var map;
 		var lookup = {};
+
+		function toIcon(faction) {
+			if (faction == 'blue') {
+				return blue8;
+			} else if (faction == 'green') {
+				return green8;
+			} else {
+				return gray8;
+			}
+		}
 
 		function load(map) {
 			var bounds = map.getBounds();
@@ -50,7 +67,7 @@ html,body {
 					+ "&lon_max=" + bounds.getEast(), function(data) {
 				$.each(data, function(key, val) {
 					if (lookup[val.id] == undefined) {
-						var marker = L.marker([ val.latitude, val.longitude ], {icon: blue8})
+						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.faction)})
 								.addTo(map);
 						if (val.name != undefined) {
 							marker.bindPopup("<b>" + val.name + "</b>");
