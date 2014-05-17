@@ -29,33 +29,40 @@ public class QueryServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 6670846638516835427L;
 
-	private static final String SELECT_PORTALS = "SELECT planet_osm_point.osm_id, "
-			+ "planet_osm_point.name, "
+	private static final String SELECT_LINKS = "SELECT osmg_link.id, "
+			+ "source.osm_id AS source_osm_id, "
+			+ "source.name AS source_name, "
+			+ "ST_Y(ST_Transform(source.way, 4326)) AS source_latitude, "
+			+ "ST_X(ST_Transform(source.way, 4326)) AS source_longitude, "
+			+ "target.osm_id AS target_osm_id, "
+			+ "target.name AS target_name, "
+			+ "ST_Y(ST_Transform(target.way, 4326)) AS target_latitude, "
+			+ "ST_X(ST_Transform(target.way, 4326)) AS target_longitude, "
+			+ "osmg_user.faction AS target_faction "
+			+ "FROM osmg_link "
+			+ "INNER JOIN osmg_portal source ON osmg_link.source_id = source.id "
+			+ "INNER JOIN osmg_portal target ON osmg_link.target_id = target.id "
+			+ "INNER JOIN osmg_user ON osmg_link.owner_id = osmg_user.id "
+			+ "WHERE (ST_Y(ST_Transform(source.way, 4326)) > ? "
+			+ "AND ST_Y(ST_Transform(source.way, 4326)) < ? "
+			+ "AND ST_X(ST_Transform(source.way, 4326)) > ? "
+			+ "AND ST_X(ST_Transform(source.way, 4326)) < ?) "
+			+ "OR (ST_Y(ST_Transform(target.way, 4326)) > ? "
+			+ "AND ST_Y(ST_Transform(target.way, 4326)) < ? "
+			+ "AND ST_X(ST_Transform(target.way, 4326)) > ? "
+			+ "AND ST_X(ST_Transform(target.way, 4326)) < ?)";
+
+	private static final String SELECT_PORTALS = "SELECT osmg_portal.id, "
+			+ "osmg_portal.name, "
 			+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
 			+ "ST_X(ST_Transform(way, 4326)) as longitude, "
 			+ "faction "
-			+ "FROM planet_osm_point "
-			+ "LEFT OUTER JOIN osmg_portal ON planet_osm_point.osm_id = osmg_portal.osm_id "
+			+ "FROM osmg_portal "
 			+ "LEFT OUTER JOIN osmg_user ON osmg_portal.owner_id = osmg_user.id "
-			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
-			+ "AND ST_Y(ST_Transform(way, 4326)) > ? "
+			+ "WHERE ST_Y(ST_Transform(way, 4326)) > ? "
 			+ "AND ST_Y(ST_Transform(way, 4326)) < ? "
 			+ "AND ST_X(ST_Transform(way, 4326)) > ? "
-			+ "AND ST_X(ST_Transform(way, 4326)) < ? "
-			+ "UNION "
-			+ "SELECT planet_osm_polygon.osm_id, "
-			+ "planet_osm_polygon.name, "
-			+ "((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) as latitude, "
-			+ "((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) as longitude, "
-			+ "faction "
-			+ "FROM planet_osm_polygon "
-			+ "LEFT OUTER JOIN osmg_portal ON planet_osm_polygon.osm_id = osmg_portal.osm_id "
-			+ "LEFT OUTER JOIN osmg_user ON osmg_portal.owner_id = osmg_user.id "
-			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
-			+ "AND ST_YMax(ST_Transform(way, 4326)) > ? "
-			+ "AND ST_YMin(ST_Transform(way, 4326)) < ? "
-			+ "AND ST_XMax(ST_Transform(way, 4326)) > ? "
-			+ "AND ST_XMin(ST_Transform(way, 4326)) < ?";
+			+ "AND ST_X(ST_Transform(way, 4326)) < ?";
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -93,9 +100,33 @@ public class QueryServlet extends HttpServlet {
 	private void loadPortals(HttpServletResponse resp, double lat_min,
 			double lat_max, double lon_min, double lon_max) throws IOException,
 			ServletException {
+
+		JsonObject result = new JsonObject();
+
 		try (Connection connection = ConnectionFactory.getConnection()) {
 			try (PreparedStatement statement = connection
 					.prepareStatement(SELECT_PORTALS)) {
+
+				statement.setDouble(1, lat_min);
+				statement.setDouble(2, lat_max);
+				statement.setDouble(3, lon_min);
+				statement.setDouble(4, lon_max);
+
+				JsonArray portals = new JsonArray();
+				try (ResultSet resultSet = statement.executeQuery()) {
+					while (resultSet.next()) {
+						portals.add(convertPortalToJson(resultSet));
+					}
+				}
+				result.add("portals", portals);
+			}
+		} catch (SQLException e) {
+			throw new ServletException(e);
+		}
+
+		try (Connection connection = ConnectionFactory.getConnection()) {
+			try (PreparedStatement statement = connection
+					.prepareStatement(SELECT_LINKS)) {
 
 				statement.setDouble(1, lat_min);
 				statement.setDouble(2, lat_max);
@@ -106,39 +137,81 @@ public class QueryServlet extends HttpServlet {
 				statement.setDouble(7, lon_min);
 				statement.setDouble(8, lon_max);
 
-				JsonArray jsonArray = new JsonArray();
+				JsonArray links = new JsonArray();
 				try (ResultSet resultSet = statement.executeQuery()) {
 					while (resultSet.next()) {
-						jsonArray.add(convertToJson(resultSet));
+						links.add(convertLinkToJson(resultSet));
 					}
 				}
-				resp.setContentType("application/json; charset=UTF-8");
-				PrintWriter writer = resp.getWriter();
-				JsonWriter jsonWriter = new JsonWriter(writer);
-				jsonWriter.setLenient(true);
-				Streams.write(jsonArray, jsonWriter);
+				result.add("links", links);
 			}
 		} catch (SQLException e) {
 			throw new ServletException(e);
 		}
+
+		resp.setContentType("application/json; charset=UTF-8");
+		PrintWriter writer = resp.getWriter();
+		JsonWriter jsonWriter = new JsonWriter(writer);
+		jsonWriter.setLenient(true);
+		Streams.write(result, jsonWriter);
 	}
 
-	private JsonObject convertToJson(@Nonnull ResultSet resultSetPoint)
+	private JsonObject convertPortalToJson(@Nonnull ResultSet resultSetPoint)
 			throws SQLException {
-		JsonObject jsonObject = new JsonObject();
+		JsonObject portal = new JsonObject();
 		long id = resultSetPoint.getLong(1);
-		jsonObject.add("id", new JsonPrimitive(id));
+		portal.add("id", new JsonPrimitive(id));
 		String name = resultSetPoint.getString(2);
-		jsonObject.add("name", name == null ? JsonNull.INSTANCE
+		portal.add("name", name == null ? JsonNull.INSTANCE
 				: new JsonPrimitive(name));
 		double latitude = resultSetPoint.getDouble(3);
-		jsonObject.add("latitude", new JsonPrimitive(latitude));
+		portal.add("latitude", new JsonPrimitive(latitude));
 		double longitude = resultSetPoint.getDouble(4);
-		jsonObject.add("longitude", new JsonPrimitive(longitude));
+		portal.add("longitude", new JsonPrimitive(longitude));
 		String faction = resultSetPoint.getString(5);
-		jsonObject.add("faction", faction == null ? JsonNull.INSTANCE
+		portal.add("faction", faction == null ? JsonNull.INSTANCE
 				: new JsonPrimitive(faction));
-		return jsonObject;
+		return portal;
+	}
+
+	private JsonObject convertLinkToJson(@Nonnull ResultSet resultSetPoint)
+			throws SQLException {
+		JsonObject link = new JsonObject();
+		long id = resultSetPoint.getLong(1);
+		link.add("id", new JsonPrimitive(id));
+
+		{
+			JsonObject portal = new JsonObject();
+			long sourceOsmId = resultSetPoint.getLong(2);
+			portal.add("id", new JsonPrimitive(sourceOsmId));
+			String name = resultSetPoint.getString(3);
+			portal.add("name", name == null ? JsonNull.INSTANCE
+					: new JsonPrimitive(name));
+			double latitude = resultSetPoint.getDouble(4);
+			portal.add("latitude", new JsonPrimitive(latitude));
+			double longitude = resultSetPoint.getDouble(5);
+			portal.add("longitude", new JsonPrimitive(longitude));
+			link.add("source", portal);
+		}
+
+		{
+			JsonObject portal = new JsonObject();
+			long sourceOsmId = resultSetPoint.getLong(6);
+			portal.add("id", new JsonPrimitive(sourceOsmId));
+			String name = resultSetPoint.getString(7);
+			portal.add("name", name == null ? JsonNull.INSTANCE
+					: new JsonPrimitive(name));
+			double latitude = resultSetPoint.getDouble(8);
+			portal.add("latitude", new JsonPrimitive(latitude));
+			double longitude = resultSetPoint.getDouble(9);
+			portal.add("longitude", new JsonPrimitive(longitude));
+			link.add("target", portal);
+		}
+
+		String faction = resultSetPoint.getString(10);
+		link.add("faction", new JsonPrimitive(faction));
+
+		return link;
 	}
 
 }
