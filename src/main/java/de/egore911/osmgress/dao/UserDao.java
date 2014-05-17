@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.annotation.Nonnull;
+
 import de.egore911.osmgress.ConnectionFactory;
 import de.egore911.osmgress.model.Faction;
 import de.egore911.osmgress.model.User;
@@ -73,5 +75,20 @@ public class UserDao {
 				throw new RuntimeException(e.getMessage(), e);
 			}
 		}
+	}
+
+	public static User convertToUser(@Nonnull ResultSet resultSet, int offset)
+			throws SQLException {
+		String username = resultSet.getString(3 + offset);
+		if (username != null) {
+			long ownerId = resultSet.getLong(1 + offset);
+			String faction = resultSet.getString(2 + offset);
+			User user = new User();
+			user.setId(ownerId);
+			user.setFaction(Faction.valueOf(faction));
+			user.setName(username);
+			return user;
+		}
+		return null;
 	}
 }

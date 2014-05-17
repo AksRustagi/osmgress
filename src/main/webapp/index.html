@@ -37,7 +37,7 @@ html,body {
 					+ "&lon_max=" + bounds.getEast(), function(data) {
 				$.each(data.portals, function(key, val) {
 					if (lookup[val.id] == undefined) {
-						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.faction)})
+						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.owner != undefined ? val.owner.faction : undefined)})
 								.addTo(map);
 						var label = "<b>";
 						if (val.name != undefined) {
@@ -55,7 +55,7 @@ html,body {
 					                 new L.LatLng(val.target.latitude, val.target.longitude)];
 
 					var line = new L.Polyline(pointList, {
-						color: toColor(val.faction),
+						color: toColor(val.owner != undefined ? val.owner.faction : undefined),
 						weight: 3,
 						opacity: 0.5,
 						smoothFactor: 1

@@ -1,6 +1,5 @@
 package de.egore911.osmgress.model;
 
-
 public class User {
 
 	private Long id;

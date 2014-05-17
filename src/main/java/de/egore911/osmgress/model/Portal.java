@@ -1,34 +1,51 @@
 package de.egore911.osmgress.model;
 
-import de.egore911.osmgress.dao.UserDao;
-
 public class Portal {
 
-	private Long osmId;
-	private Long ownerId;
+	private Long id;
+	private String name;
+	private double latitude;
+	private double longitude;
 	private User owner;
 
-	public Long getOsmId() {
-		return osmId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setOsmId(Long osmId) {
-		this.osmId = osmId;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public Long getOwnerId() {
-		return ownerId;
+	public String getName() {
+		return name;
 	}
 
-	public void setOwnerId(Long ownerId) {
-		this.ownerId = ownerId;
-		owner = null;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
 	}
 
 	public User getOwner() {
-		if (owner == null) {
-			owner = UserDao.getById(ownerId);
-		}
 		return owner;
 	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
+	}
+
 }
