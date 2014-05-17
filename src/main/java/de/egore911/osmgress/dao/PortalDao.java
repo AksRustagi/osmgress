@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 
 import de.egore911.osmgress.ConnectionFactory;
 import de.egore911.osmgress.model.Portal;
+import de.egore911.osmgress.model.User;
 
 public class PortalDao {
 
@@ -24,7 +25,7 @@ public class PortalDao {
 			+ "FROM osmg_portal "
 			+ "LEFT OUTER JOIN osmg_user ON osmg_portal.owner_id = osmg_user.id";
 
-	private static final String WHERE_ID = " WHERE id = ?";
+	private static final String WHERE_ID = " WHERE osmg_portal.id = ?";
 
 	private static final String WHERE_WITHIN = " WHERE ST_Y(ST_Transform(way, 4326)) > ? "
 			+ "AND ST_Y(ST_Transform(way, 4326)) < ? "
@@ -36,7 +37,7 @@ public class PortalDao {
 			try (PreparedStatement statement = connection
 					.prepareStatement(SELECT_PORTAL_BASE + WHERE_ID)) {
 				statement.setLong(1, id);
-				try (ResultSet resultSet = statement.getResultSet()) {
+				try (ResultSet resultSet = statement.executeQuery()) {
 					if (!resultSet.next()) {
 						throw new RuntimeException(
 								"Could not find Portal with id " + id);
@@ -87,6 +88,29 @@ public class PortalDao {
 
 		portal.setOwner(UserDao.convertToUser(resultSet, offset + 4));
 		return portal;
+	}
+
+	public static Portal own(Portal portal, User owner) {
+		try (Connection connection = ConnectionFactory.getConnection()) {
+			try (PreparedStatement statement = connection
+					.prepareStatement("UPDATE osmg_portal SET owner_id = ? WHERE id = ?")) {
+
+				statement.setLong(1, owner.getId());
+				statement.setLong(2, portal.getId());
+				int count = statement.executeUpdate();
+
+				if (count == 0) {
+					throw new IllegalArgumentException("Could not own portal");
+				} else if (count > 1) {
+					throw new IllegalArgumentException(
+							"Owned more than one portal");
+				}
+				portal.setOwner(owner);
+				return portal;
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
 	}
 
 }

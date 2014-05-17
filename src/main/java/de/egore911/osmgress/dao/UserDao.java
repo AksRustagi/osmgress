@@ -14,13 +14,18 @@ import de.egore911.osmgress.model.User;
 
 public class UserDao {
 
+	private static final String SELECT_PORTAL_BASE = "SELECT name, faction "
+			+ "FROM osmg_user";
+
+	private static final String WHERE_ID = " WHERE id = ?";
+
 	public static User getById(Long id) {
 		try (Connection connection = ConnectionFactory.getConnection()) {
 
 			try (PreparedStatement statement = connection
-					.prepareStatement("SELECT name, faction FROM osmg_user WHERE id = ?")) {
+					.prepareStatement(SELECT_PORTAL_BASE + WHERE_ID)) {
 				statement.setLong(1, id);
-				try (ResultSet resultSet = statement.getResultSet()) {
+				try (ResultSet resultSet = statement.executeQuery()) {
 					if (!resultSet.next()) {
 						throw new RuntimeException(
 								"Could not find User with id " + id);

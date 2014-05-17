@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -11,6 +12,8 @@ import javax.annotation.Nonnull;
 
 import de.egore911.osmgress.ConnectionFactory;
 import de.egore911.osmgress.model.Link;
+import de.egore911.osmgress.model.Portal;
+import de.egore911.osmgress.model.User;
 
 public class LinkDao {
 
@@ -39,7 +42,9 @@ public class LinkDao {
 			+ "INNER JOIN osmg_user target_owner ON target.owner_id = target_owner.id "
 			+ "INNER JOIN osmg_user ON osmg_link.owner_id = osmg_user.id";
 
-	private static final String WHERE_ID = " WHERE id = ?";
+	private static final String WHERE_ID = " WHERE osmg_link.id = ?";
+
+	private static final String WHERE_SOURCE_TARGET = " WHERE source.id = ? and target.id = ?";
 
 	private static final String WHERE_WITHIN = " WHERE (ST_Y(ST_Transform(source.way, 4326)) > ? "
 			+ "AND ST_Y(ST_Transform(source.way, 4326)) < ? "
@@ -55,7 +60,7 @@ public class LinkDao {
 			try (PreparedStatement statement = connection
 					.prepareStatement(SELECT_LINK_BASE + WHERE_ID)) {
 				statement.setLong(1, id);
-				try (ResultSet resultSet = statement.getResultSet()) {
+				try (ResultSet resultSet = statement.executeQuery()) {
 					if (!resultSet.next()) {
 						throw new RuntimeException(
 								"Could not find Portal with id " + id);
@@ -94,6 +99,50 @@ public class LinkDao {
 		} catch (SQLException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		}
+	}
+
+	public static Link findBySourceTarget(Portal source, Portal target) {
+		try (Connection connection = ConnectionFactory.getConnection()) {
+			try (PreparedStatement statement = connection
+					.prepareStatement(SELECT_LINK_BASE + WHERE_SOURCE_TARGET)) {
+				statement.setLong(1, source.getId());
+				statement.setLong(2, target.getId());
+				try (ResultSet resultSet = statement.executeQuery()) {
+					if (!resultSet.next()) {
+						return null;
+					}
+					return convertToLink(resultSet);
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+
+	public static Link create(Portal source, Portal target, User owner) {
+		long id;
+		try (Connection connection = ConnectionFactory.getConnection()) {
+			try (PreparedStatement statement = connection
+					.prepareStatement(
+							"INSERT INTO osmg_link (source_id, target_id, owner_id) VALUES (?, ?, ?)",
+							Statement.RETURN_GENERATED_KEYS)) {
+				statement.setLong(1, source.getId());
+				statement.setLong(2, target.getId());
+				statement.setLong(3, owner.getId());
+				statement.execute();
+
+				try (ResultSet resultSet = statement.getGeneratedKeys()) {
+					if (!resultSet.next()) {
+						throw new IllegalArgumentException(
+								"Could not create link");
+					}
+					id = resultSet.getLong(1);
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+		return getById(id);
 	}
 
 	private static Link convertToLink(@Nonnull ResultSet resultSet)

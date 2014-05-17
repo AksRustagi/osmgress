@@ -26,9 +26,75 @@ html,body {
 	<div id="map"></div>
 	<script type="text/javascript">
 
+		// TODO hack
+		var user = {
+				id: 1,
+				name: "egore911@gmail.com",
+				faction: "green"
+		}
 
 		var map;
 		var lookup = {};
+
+		function own(portal) {
+			$.get("portal?portal=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
+				if (data.status == "ok") {
+					var marker = lookup[portal];
+					marker.setIcon(green8);
+					marker.closePopup();
+					var popup = marker.getPopup();
+					popup.setContent(getMarkerLabel(data.portal));
+				}
+			});
+		}
+
+		var from = undefined;
+		function link(portal) {
+			if (from == undefined) {
+				from = portal;
+				var marker = lookup[portal];
+				marker.closePopup();
+			} else {
+				$.get("link?from=" + from + "&to=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
+					if (data.status == "ok") {
+						var marker = lookup[portal];
+						marker.closePopup();
+						var popup = marker.getPopup();
+						popup.setContent(getMarkerLabel(data.link.target));
+						marker = lookup[from];
+						var popup = marker.getPopup();
+						popup.setContent(getMarkerLabel(data.link.source));
+
+						var pointList = [new L.LatLng(data.link.source.latitude, data.link.source.longitude),
+						                 new L.LatLng(data.link.target.latitude, data.link.target.longitude)];
+
+						var line = new L.Polyline(pointList, {
+							color: toColor(data.link.owner.faction),
+							weight: 3,
+							opacity: 0.5,
+							smoothFactor: 1
+						}).addTo(map);
+					}
+					from = undefined;
+				});
+			}
+		}
+
+		function getMarkerLabel(val) {
+			var label = "<b>";
+			if (val.name != undefined) {
+				label += val.name;
+			} else {
+				label += "?"
+			}
+			label += "</b><br/>" + val.id;
+			if (val.owner == undefined) {
+				label += "<br/><a href=\"#\" onclick=\"own(" + val.id + "); return false;\">Own</a>";
+			} else if (val.owner.faction == user.faction) {
+				label += "<br/><a href=\"#\" onclick=\"link(" + val.id + "); return false;\">Link</a>";
+			}
+			return label;
+		}
 
 		function load(map) {
 			var bounds = map.getBounds();
@@ -39,14 +105,7 @@ html,body {
 					if (lookup[val.id] == undefined) {
 						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.owner != undefined ? val.owner.faction : undefined)})
 								.addTo(map);
-						var label = "<b>";
-						if (val.name != undefined) {
-							label += val.name;
-						} else {
-							label += "?"
-						}
-						label += "</b><br/>" + val.id;
-						marker.bindPopup(label);
+						marker.bindPopup(getMarkerLabel(val));
 						lookup[val.id] = marker;
 					}
 				});
@@ -55,7 +114,7 @@ html,body {
 					                 new L.LatLng(val.target.latitude, val.target.longitude)];
 
 					var line = new L.Polyline(pointList, {
-						color: toColor(val.owner != undefined ? val.owner.faction : undefined),
+						color: toColor(val.owner.faction),
 						weight: 3,
 						opacity: 0.5,
 						smoothFactor: 1
