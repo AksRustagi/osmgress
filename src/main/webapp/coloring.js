@@ -12,9 +12,10 @@ var green8 = L.icon({
 	iconAnchor : [ 16, 16 ],
 	popupAnchor : [ 0, -20 ]
 });
-var gray8 = L.icon({
-	iconUrl : 'images/gray8_32.png',
-	iconRetinaUrl : 'images/gray8_64.png',
+
+var gray = L.icon({
+	iconUrl : 'images/gray0_32.png',
+	iconRetinaUrl : 'images/gray0_64.png',
 	iconSize : [ 32, 32 ],
 	iconAnchor : [ 16, 16 ],
 	popupAnchor : [ 0, -20 ]
@@ -26,7 +27,7 @@ function toIcon(faction) {
 	} else if (faction == 'green') {
 		return green8;
 	} else {
-		return gray8;
+		return gray;
 	}
 }
 
