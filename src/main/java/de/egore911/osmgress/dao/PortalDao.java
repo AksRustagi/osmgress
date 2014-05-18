@@ -1,5 +1,6 @@
 package de.egore911.osmgress.dao;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,8 +10,14 @@ import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
+import org.postgresql.util.PGobject;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import de.egore911.osmgress.ConnectionFactory;
 import de.egore911.osmgress.model.Portal;
+import de.egore911.osmgress.model.Slot;
 import de.egore911.osmgress.model.User;
 
 public class PortalDao {
@@ -19,6 +26,7 @@ public class PortalDao {
 			+ "osmg_portal.name, "
 			+ "ST_Y(ST_Transform(way, 4326)) as latitude, "
 			+ "ST_X(ST_Transform(way, 4326)) as longitude, "
+			+ "osmg_portal.slots, "
 			+ "osmg_portal.owner_id, "
 			+ "osmg_user.faction, "
 			+ "osmg_user.name username "
@@ -85,18 +93,30 @@ public class PortalDao {
 		portal.setLatitude(latitude);
 		double longitude = resultSet.getDouble(4 + offset);
 		portal.setLongitude(longitude);
+		String slots = resultSet.getString(5 + offset);
+		Collection<Slot> fromJson = null;
+		if (slots != null) {
+			Type type = new TypeToken<Collection<Slot>>() {
+			}.getType();
+			fromJson = new Gson().fromJson(slots, type);
+		}
+		portal.setSlots(fromJson);
 
-		portal.setOwner(UserDao.convertToUser(resultSet, offset + 4));
+		portal.setOwner(UserDao.convertToUser(resultSet, 5 + offset));
 		return portal;
 	}
 
 	public static Portal own(Portal portal, User owner) {
 		try (Connection connection = ConnectionFactory.getConnection()) {
 			try (PreparedStatement statement = connection
-					.prepareStatement("UPDATE osmg_portal SET owner_id = ? WHERE id = ?")) {
+					.prepareStatement("UPDATE osmg_portal SET owner_id = ?, slots = ? WHERE id = ?")) {
 
 				statement.setLong(1, owner.getId());
-				statement.setLong(2, portal.getId());
+				PGobject slotsJson = new PGobject();
+				slotsJson.setType("json");
+				slotsJson.setValue(new Gson().toJson(portal.getSlots()));
+				statement.setObject(2, slotsJson);
+				statement.setLong(3, portal.getId());
 				int count = statement.executeUpdate();
 
 				if (count == 0) {

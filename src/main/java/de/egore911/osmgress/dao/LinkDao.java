@@ -22,6 +22,7 @@ public class LinkDao {
 			+ "source.name AS source_name, "
 			+ "ST_Y(ST_Transform(source.way, 4326)) AS source_latitude, "
 			+ "ST_X(ST_Transform(source.way, 4326)) AS source_longitude, "
+			+ "source.slots, "
 			+ "source.owner_id, "
 			+ "source_owner.faction, "
 			+ "source_owner.name username, "
@@ -29,6 +30,7 @@ public class LinkDao {
 			+ "target.name AS target_name, "
 			+ "ST_Y(ST_Transform(target.way, 4326)) AS target_latitude, "
 			+ "ST_X(ST_Transform(target.way, 4326)) AS target_longitude, "
+			+ "target.slots, "
 			+ "target.owner_id, "
 			+ "target_owner.faction, "
 			+ "target_owner.name username, "
@@ -152,8 +154,8 @@ public class LinkDao {
 		link.setId(id);
 
 		link.setSource(PortalDao.convertToPortal(resultSet, 1));
-		link.setTarget(PortalDao.convertToPortal(resultSet, 8));
-		link.setOwner(UserDao.convertToUser(resultSet, 15));
+		link.setTarget(PortalDao.convertToPortal(resultSet, 9));
+		link.setOwner(UserDao.convertToUser(resultSet, 17));
 
 		return link;
 	}

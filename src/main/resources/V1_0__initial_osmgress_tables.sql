@@ -14,6 +14,7 @@ CREATE TABLE osmg_portal(
   owner_id bigint,
   way geometry(Point,900913),
   name text,
+  slots json,
   CONSTRAINT osmg_portal_owner_id_fkey FOREIGN KEY (owner_id)
       REFERENCES osmg_user (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,

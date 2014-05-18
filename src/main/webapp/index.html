@@ -39,11 +39,14 @@ html,body {
 		var lookupPortal = {};
 		var lookupLink = {};
 
-		function own(portal) {
-			$.get("portal?portal=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
+		function deployResonator(portal) {
+			$.get("portal/deployResonator?portal=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
 				if (data.status == "ok") {
 					var marker = lookupPortal[portal];
-					marker.setIcon(green8);
+					var faction = data.portal.owner.faction;
+					var slots = data.portal.slots;
+					var icon = toIcon(faction, slots);
+					marker.setIcon(icon);
 					marker.closePopup();
 					var popup = marker.getPopup();
 					popup.setContent(getMarkerLabel(data.portal));
@@ -92,9 +95,14 @@ html,body {
 			}
 			label += "</b><br/>" + val.id;
 			if (val.owner == undefined) {
-				label += "<br/><span href=\"#\" onclick=\"own(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Own</span>";
+				label += "<br/><span href=\"#\" onclick=\"deployResonator(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Deploy resonator</span>";
 			} else if (val.owner.faction == user.faction) {
-				label += "<br/><span href=\"#\" onclick=\"link(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Link</span>";
+				label += "<br/>";
+				if (val.slots.length < 8) {
+					label += "<span href=\"#\" onclick=\"deployResonator(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Deploy resonator</span>";
+				} else {
+					label += "<span href=\"#\" onclick=\"link(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Link</span>";
+				}
 			}
 			return label;
 		}
@@ -106,7 +114,7 @@ html,body {
 					+ "&lon_max=" + bounds.getEast(), function(data) {
 				$.each(data.portals, function(key, val) {
 					if (lookupPortal[val.id] == undefined) {
-						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.owner != undefined ? val.owner.faction : undefined)})
+						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.owner != undefined ? val.owner.faction : undefined, val.slots)})
 								.addTo(map);
 						marker.bindPopup(getMarkerLabel(val));
 						lookupPortal[val.id] = marker;

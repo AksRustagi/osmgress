@@ -1,5 +1,8 @@
 package de.egore911.osmgress.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class Portal {
 
 	private Long id;
@@ -7,6 +10,7 @@ public class Portal {
 	private double latitude;
 	private double longitude;
 	private User owner;
+	private Collection<Slot> slots;
 
 	public Long getId() {
 		return id;
@@ -46,6 +50,14 @@ public class Portal {
 
 	public void setOwner(User owner) {
 		this.owner = owner;
+	}
+
+	public Collection<Slot> getSlots() {
+		return slots;
+	}
+
+	public void setSlots(Collection<Slot> slots) {
+		this.slots = slots;
 	}
 
 }

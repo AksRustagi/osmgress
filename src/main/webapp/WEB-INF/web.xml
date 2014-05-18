@@ -18,6 +18,7 @@
 	<servlet-mapping>
 		<servlet-name>portal</servlet-name>
 		<url-pattern>/portal</url-pattern>
+		<url-pattern>/portal/deployResonator</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>link</servlet-name>
