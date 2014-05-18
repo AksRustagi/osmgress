@@ -36,12 +36,13 @@ html,body {
 		}
 
 		var map;
-		var lookup = {};
+		var lookupPortal = {};
+		var lookupLink = {};
 
 		function own(portal) {
 			$.get("portal?portal=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
 				if (data.status == "ok") {
-					var marker = lookup[portal];
+					var marker = lookupPortal[portal];
 					marker.setIcon(green8);
 					marker.closePopup();
 					var popup = marker.getPopup();
@@ -54,16 +55,16 @@ html,body {
 		function link(portal) {
 			if (from == undefined) {
 				from = portal;
-				var marker = lookup[portal];
+				var marker = lookupPortal[portal];
 				marker.closePopup();
 			} else {
 				$.get("link?from=" + from + "&to=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
 					if (data.status == "ok") {
-						var marker = lookup[portal];
+						var marker = lookupPortal[portal];
 						marker.closePopup();
 						var popup = marker.getPopup();
 						popup.setContent(getMarkerLabel(data.link.target));
-						marker = lookup[from];
+						marker = lookupPortal[from];
 						var popup = marker.getPopup();
 						popup.setContent(getMarkerLabel(data.link.source));
 
@@ -104,23 +105,27 @@ html,body {
 					+ bounds.getNorth() + "&lon_min=" + bounds.getWest()
 					+ "&lon_max=" + bounds.getEast(), function(data) {
 				$.each(data.portals, function(key, val) {
-					if (lookup[val.id] == undefined) {
+					if (lookupPortal[val.id] == undefined) {
 						var marker = L.marker([ val.latitude, val.longitude ], {icon: toIcon(val.owner != undefined ? val.owner.faction : undefined)})
 								.addTo(map);
 						marker.bindPopup(getMarkerLabel(val));
-						lookup[val.id] = marker;
+						lookupPortal[val.id] = marker;
 					}
 				});
 				$.each(data.links, function(key, val) {
-					var pointList = [new L.LatLng(val.source.latitude, val.source.longitude),
-					                 new L.LatLng(val.target.latitude, val.target.longitude)];
 
-					var line = new L.Polyline(pointList, {
-						color: toColor(val.owner.faction),
-						weight: 3,
-						opacity: 0.5,
-						smoothFactor: 1
-					}).addTo(map);
+					if (lookupLink[val.source.id + '-' + val.target.id] == undefined) {
+						var pointList = [new L.LatLng(val.source.latitude, val.source.longitude),
+						                 new L.LatLng(val.target.latitude, val.target.longitude)];
+
+						var line = new L.Polyline(pointList, {
+							color: toColor(val.owner.faction),
+							weight: 3,
+							opacity: 0.5,
+							smoothFactor: 1
+						}).addTo(map);
+						lookupLink[val.source.id + '-' + val.target.id] = line;
+					}
 				});
 			});
 		}
