@@ -1,6 +1,5 @@
 package de.egore911.osmgress.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class Portal {
