@@ -19,12 +19,12 @@ public class Startup implements ServletContextListener {
 	private static final String CREATE_MISSING_PORTALS_POINTS = "INSERT INTO osmg_portal (osm_id, name, way) "
 			+ "SELECT osm_id, name, way "
 			+ "FROM planet_osm_point "
-			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy' OR amenity='restaurant' OR amenity='school' OR shop is not null) "
 			+ "AND osm_id NOT IN (SELECT osm_id FROM osmg_portal)";
 	private static final String CREATE_MISSING_PORTALS_POLYGONS = "INSERT INTO osmg_portal (osm_id, name, way) "
 			+ "SELECT osm_id, name, ST_GeomFromText('POINT(' || ((ST_YMax(ST_Transform(way, 4326)) - ST_YMin(ST_Transform(way, 4326))) / 2) + ST_YMin(ST_Transform(way, 4326)) || ' ' || ((ST_XMax(ST_Transform(way, 4326)) - ST_XMin(ST_Transform(way, 4326))) / 2) + ST_XMin(ST_Transform(way, 4326)) || ')', 900913) "
 			+ "FROM planet_osm_polygon "
-			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy') "
+			+ "WHERE (amenity='place_of_worship' OR amenity='hospital' OR amenity='pharmacy' OR amenity='restaurant' OR amenity='school' OR shop is not null) "
 			+ "AND osm_id NOT IN (SELECT osm_id FROM osmg_portal) "
 			+ "AND osm_id > 0";
 
