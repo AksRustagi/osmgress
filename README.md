@@ -91,9 +91,9 @@ Colors
 
 <table>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<th>Faction</th>
+<th>Dark color</th>
+<th>Light color</th>
 </tr>
 <tr>
 <td>Blue</td>
@@ -104,5 +104,10 @@ Colors
 <td>Green</td>
 <td>#03a700</td>
 <td>#3bea5e</td>
+</tr>
+<tr>
+<td>-</td>
+<td>#838383</td>
+<td>#c0c0c0</td>
 </tr>
 </table>
