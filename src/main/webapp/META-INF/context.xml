@@ -6,4 +6,10 @@
 		username="osmgress" password="osmgress" driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://localhost/osmgress_mapnik" />
 
+	<Realm className="org.apache.catalina.realm.JDBCRealm"
+		driverName="org.postgresql.Driver" digest="SHA-256" connectionName="osmgress"
+		connectionPassword="osmgress" connectionURL="jdbc:postgresql://localhost/osmgress_mapnik"
+		userTable="osmg_user" userNameCol="name" userCredCol="password"
+		userRoleTable="osmg_userroles" roleNameCol="role" />
+
 </Context>

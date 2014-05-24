@@ -1,12 +1,21 @@
 CREATE TABLE osmg_user (
   id bigserial NOT NULL,
   name character varying(50) NOT NULL,
+  password character (64) NOT NULL,
   faction faction NOT NULL,
   CONSTRAINT osmg_user_pkey PRIMARY KEY (id),
   CONSTRAINT osmg_user_name_key UNIQUE (name)
 ) WITH (OIDS=FALSE);
 ALTER TABLE osmg_user OWNER TO osmgress;
 GRANT ALL ON TABLE osmg_user TO postgres;
+
+CREATE TABLE osmg_userroles (
+  name character varying(50) NOT NULL,
+  role character varying(50) NOT NULL,
+  primary key (name, role)
+) WITH (OIDS=FALSE);
+ALTER TABLE osmg_userroles OWNER TO osmgress;
+GRANT ALL ON TABLE osmg_userroles TO postgres;
 
 CREATE TABLE osmg_portal(
   id bigserial NOT NULL,

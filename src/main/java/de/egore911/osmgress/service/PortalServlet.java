@@ -48,10 +48,9 @@ public class PortalServlet extends HttpServlet {
 				req.getRequestURI().lastIndexOf('/') + 1);
 
 		long portalId = Long.parseLong(req.getParameter("portal"));
-		long ownerId = Long.parseLong(req.getParameter("owner"));
 
 		Portal portal = PortalDao.getById(portalId);
-		User owner = UserDao.getById(ownerId);
+		User owner = UserDao.getByName(req.getRemoteUser());
 
 		Map<String, Object> result = new HashMap<>();
 

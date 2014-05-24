@@ -28,19 +28,20 @@ html,body {
 	<div id="map"></div>
 	<script type="text/javascript">
 
-		// TODO hack
-		var user = {
-				id: 1,
-				name: "egore911@gmail.com",
-				faction: "green"
-		}
+		var user = <%
+if (request.getRemoteUser() == null) {
+	out.print("undefined");
+} else {
+	out.print(new com.google.gson.Gson().toJson(de.egore911.osmgress.dao.UserDao.getByName(request.getRemoteUser())));
+}
+%>;
 
 		var map;
 		var lookupPortal = {};
 		var lookupLink = {};
 
 		function deployResonator(portal) {
-			$.get("portal/deployResonator?portal=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
+			$.get("portal/deployResonator?portal=" + portal, undefined, function(data, textStatus, jqXHR) {
 				if (data.status == "ok") {
 					var marker = lookupPortal[portal];
 					var faction = data.portal.owner.faction;
@@ -50,6 +51,7 @@ html,body {
 					marker.closePopup();
 					var popup = marker.getPopup();
 					popup.setContent(getMarkerLabel(data.portal));
+					marker.rawdata = data.portal;
 				}
 			});
 		}
@@ -61,7 +63,7 @@ html,body {
 				var marker = lookupPortal[portal];
 				marker.closePopup();
 			} else {
-				$.get("link?from=" + from + "&to=" + portal + "&owner=" + user.id, undefined, function(data, textStatus, jqXHR) {
+				$.get("link?from=" + from + "&to=" + portal, undefined, function(data, textStatus, jqXHR) {
 					if (data.status == "ok") {
 						var marker = lookupPortal[portal];
 						marker.closePopup();
@@ -96,7 +98,7 @@ html,body {
 			label += "</b><br/>" + val.id;
 			if (val.owner == undefined) {
 				label += "<br/><span href=\"#\" onclick=\"deployResonator(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Deploy resonator</span>";
-			} else if (val.owner.faction == user.faction) {
+			} else if (user != undefined && val.owner.faction == user.faction) {
 				label += "<br/>";
 				if (val.slots.length < 8) {
 					label += "<span href=\"#\" onclick=\"deployResonator(" + val.id + "); return false;\" class=\"btn btn-xs btn-info\">Deploy resonator</span>";
@@ -118,6 +120,7 @@ html,body {
 								.addTo(map);
 						marker.bindPopup(getMarkerLabel(val));
 						lookupPortal[val.id] = marker;
+						marker.rawdata = val;
 					}
 				});
 				$.each(data.links, function(key, val) {
@@ -151,6 +154,21 @@ html,body {
 			L.easyButton('fa-compass', function() {
 				map.locate({setView: true, enableHighAccuracy: true});
 			}, 'Center to your position');
+			if (user == undefined) {
+				var loginbutton = L.easyButton('fa-user', function() {
+					$.getJSON("login", function(data) {
+						user = data;
+						$.each(lookupPortal, function(index, data) {
+							var marker = data;
+							var popup = marker.getPopup();
+							popup.setContent(getMarkerLabel(marker.rawdata));
+						});
+						if (user != undefined) {
+							map.removeControl(loginbutton);
+						}
+					});
+				}, 'Log in');
+			}
 
 			load(map);
 

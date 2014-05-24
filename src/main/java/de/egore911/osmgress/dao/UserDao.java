@@ -29,16 +29,17 @@ import de.egore911.osmgress.model.User;
 
 public class UserDao {
 
-	private static final String SELECT_PORTAL_BASE = "SELECT name, faction "
+	private static final String SELECT_USER_BASE = "SELECT id, name, faction "
 			+ "FROM osmg_user";
 
 	private static final String WHERE_ID = " WHERE id = ?";
+	private static final String WHERE_NAME = " WHERE name = ?";
 
 	public static User getById(Long id) {
 		try (Connection connection = ConnectionFactory.getConnection()) {
 
 			try (PreparedStatement statement = connection
-					.prepareStatement(SELECT_PORTAL_BASE + WHERE_ID)) {
+					.prepareStatement(SELECT_USER_BASE + WHERE_ID)) {
 				statement.setLong(1, id);
 				try (ResultSet resultSet = statement.executeQuery()) {
 					if (!resultSet.next()) {
@@ -46,9 +47,32 @@ public class UserDao {
 								"Could not find User with id " + id);
 					}
 					User user = new User();
-					user.setId(id);
-					user.setName(resultSet.getString(1));
-					user.setFaction(Faction.valueOf(resultSet.getString(2)));
+					user.setId(resultSet.getLong(1));
+					user.setName(resultSet.getString(2));
+					user.setFaction(Faction.valueOf(resultSet.getString(3)));
+					return user;
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+
+	public static User getByName(String name) {
+		try (Connection connection = ConnectionFactory.getConnection()) {
+
+			try (PreparedStatement statement = connection
+					.prepareStatement(SELECT_USER_BASE + WHERE_NAME)) {
+				statement.setString(1, name);
+				try (ResultSet resultSet = statement.executeQuery()) {
+					if (!resultSet.next()) {
+						throw new RuntimeException(
+								"Could not find User with name " + name);
+					}
+					User user = new User();
+					user.setId(resultSet.getLong(1));
+					user.setName(resultSet.getString(2));
+					user.setFaction(Faction.valueOf(resultSet.getString(3)));
 					return user;
 				}
 			}

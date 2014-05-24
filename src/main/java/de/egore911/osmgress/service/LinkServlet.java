@@ -43,11 +43,10 @@ public class LinkServlet extends HttpServlet {
 			throws ServletException, IOException {
 		long fromId = Long.parseLong(req.getParameter("from"));
 		long toId = Long.parseLong(req.getParameter("to"));
-		long ownerId = Long.parseLong(req.getParameter("owner"));
 
 		Portal from = PortalDao.getById(fromId);
 		Portal to = PortalDao.getById(toId);
-		User owner = UserDao.getById(ownerId);
+		User owner = UserDao.getByName(req.getRemoteUser());
 
 		Map<String, Object> result = new HashMap<>();
 
