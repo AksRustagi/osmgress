@@ -95,7 +95,7 @@ if (request.getRemoteUser() == null) {
 			if (val.name != undefined) {
 				label += val.name;
 			} else {
-				label += "?"
+				label += "?";
 			}
 			label += "</b><br/>" + val.id;
 			if (val.owner == undefined) {
