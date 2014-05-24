@@ -48,7 +48,9 @@ if (request.getRemoteUser() == null) {
 					var slots = data.portal.slots;
 					var icon = toIcon(faction, slots);
 					marker.setIcon(icon);
-					marker.closePopup();
+					if (slots.length == 8) {
+						marker.closePopup();
+					}
 					var popup = marker.getPopup();
 					popup.setContent(getMarkerLabel(data.portal));
 					marker.rawdata = data.portal;
