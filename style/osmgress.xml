@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over" background-color="#333333" maximum-extent="-20037508.34,-20037508.34,20037508.34,20037508.34">
+
+<Parameters>
+  <Parameter name="bounds">-180,-85.0511,180,85.0511</Parameter>
+  <Parameter name="center">8.3496,50.3174,5</Parameter>
+  <Parameter name="format">png8</Parameter>
+  <Parameter name="minzoom">0</Parameter>
+  <Parameter name="maxzoom">22</Parameter>
+  <Parameter name="scale">1</Parameter>
+  <Parameter name="metatile">2</Parameter>
+  <Parameter name="id"><![CDATA[osmgress]]></Parameter>
+  <Parameter name="_updated">1400102985000</Parameter>
+  <Parameter name="tilejson"><![CDATA[2.0.0]]></Parameter>
+  <Parameter name="scheme"><![CDATA[xyz]]></Parameter>
+</Parameters>
+
+
+<Style name="countries" filter-mode="first">
+  <Rule>
+    <PolygonSymbolizer fill="#0d0d0d" />
+  </Rule>
+</Style>
+<Style name="countries-outline" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke="#444444" stroke-width="2" stroke-linejoin="round" />
+  </Rule>
+</Style>
+<Layer name="countries"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>countries-outline</StyleName>
+    <StyleName>countries</StyleName>
+    <Datasource>
+       <Parameter name="file"><![CDATA[10m-admin-0-countries.shp]]></Parameter>
+       <Parameter name="type"><![CDATA[shape]]></Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="minor_roads" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke-width="1" stroke="#888888" />
+  </Rule>
+</Style>
+<Layer name="minor_roads"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>minor_roads</StyleName>
+    <Datasource>
+       <Parameter name="type"><![CDATA[postgis]]></Parameter>
+       <Parameter name="table"><![CDATA[(select *
+ from planet_osm_line
+ where highway like 'path'
+ or highway like 'service'
+ or highway like 'living_street'
+ or highway like 'unclassified'
+ or highway like 'cycleway') as minor_roads]]></Parameter>
+       <Parameter name="key_field"><![CDATA[osm_id]]></Parameter>
+       <Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+       <Parameter name="extent_cache"><![CDATA[auto]]></Parameter>
+       <Parameter name="extent"><![CDATA[669304.31,6228448.2,972279.34,6613691.75]]></Parameter>
+       <Parameter name="dbname"><![CDATA[osmgress_mapnik]]></Parameter>
+       <Parameter name="host"><![CDATA[localhost]]></Parameter>
+       <Parameter name="port"><![CDATA[5432]]></Parameter>
+       <Parameter name="user"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="password"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="id"><![CDATA[paths]]></Parameter>
+       <Parameter name="project"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="srs"><![CDATA[+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over]]></Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="major_roads" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke-width="4" stroke="#888888" />
+  </Rule>
+</Style>
+<Layer name="major_roads"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>major_roads</StyleName>
+    <Datasource>
+       <Parameter name="type"><![CDATA[postgis]]></Parameter>
+       <Parameter name="table"><![CDATA[(select *
+ from planet_osm_line
+ where highway like 'motorway%'
+ or highway like 'primary%'
+ or highway like 'secondary%'
+ or highway  like 'trunk%') as major_roads]]></Parameter>
+       <Parameter name="key_field"><![CDATA[osm_id]]></Parameter>
+       <Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+       <Parameter name="extent_cache"><![CDATA[auto]]></Parameter>
+       <Parameter name="extent"><![CDATA[669304.31,6228448.2,972279.34,6613691.75]]></Parameter>
+       <Parameter name="dbname"><![CDATA[osmgress_mapnik]]></Parameter>
+       <Parameter name="host"><![CDATA[localhost]]></Parameter>
+       <Parameter name="port"><![CDATA[5432]]></Parameter>
+       <Parameter name="user"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="password"><![CDATA[osmgress]]></Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="roads" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke-width="2" stroke="#888888" />
+  </Rule>
+</Style>
+<Layer name="roads"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>roads</StyleName>
+    <Datasource>
+       <Parameter name="type"><![CDATA[postgis]]></Parameter>
+       <Parameter name="table"><![CDATA[(select *
+ from planet_osm_line
+ where highway like 'tertiary%'
+ or highway like 'residential%'
+ or (highway <> 'path'
+  and highway <> 'service'
+  and highway <> 'living_street'
+  and highway <> 'unclassified'
+  and highway <> 'cycleway'
+  and highway not like 'motorway%'
+  and highway not like 'primary%'
+  and highway not like 'secondary%'
+  and highway not like 'trunk%')) as roads]]></Parameter>
+       <Parameter name="key_field"><![CDATA[osm_id]]></Parameter>
+       <Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+       <Parameter name="extent_cache"><![CDATA[auto]]></Parameter>
+       <Parameter name="extent"><![CDATA[669304.31,6228448.2,972279.34,6613691.75]]></Parameter>
+       <Parameter name="dbname"><![CDATA[osmgress_mapnik]]></Parameter>
+       <Parameter name="host"><![CDATA[localhost]]></Parameter>
+       <Parameter name="port"><![CDATA[5432]]></Parameter>
+       <Parameter name="user"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="password"><![CDATA[osmgress]]></Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="buildings" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke="#444444" stroke-width="0.5" />
+    <PolygonSymbolizer fill-opacity="1" fill="#444444" />
+  </Rule>
+</Style>
+<Layer name="buildings"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>buildings</StyleName>
+    <Datasource>
+       <Parameter name="type"><![CDATA[postgis]]></Parameter>
+       <Parameter name="table"><![CDATA[(select * from planet_osm_polygon where building is not null) as buildings]]></Parameter>
+       <Parameter name="key_field"><![CDATA[osm_id]]></Parameter>
+       <Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+       <Parameter name="extent_cache"><![CDATA[auto]]></Parameter>
+       <Parameter name="extent"><![CDATA[675634.03,6263776.61,952723.13,6614023.47]]></Parameter>
+       <Parameter name="dbname"><![CDATA[osmgress_mapnik]]></Parameter>
+       <Parameter name="host"><![CDATA[localhost]]></Parameter>
+       <Parameter name="port"><![CDATA[5432]]></Parameter>
+       <Parameter name="user"><![CDATA[osmgress]]></Parameter>
+       <Parameter name="password"><![CDATA[osmgress]]></Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>
