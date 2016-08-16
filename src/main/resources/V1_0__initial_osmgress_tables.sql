@@ -1,3 +1,5 @@
+CREATE TYPE faction AS ENUM ('green', 'blue');
+
 CREATE TABLE osmg_user (
   id bigserial NOT NULL,
   name character varying(50) NOT NULL,
@@ -47,3 +49,6 @@ CREATE TABLE osmg_link(
 ) WITH (OIDS=FALSE);
 ALTER TABLE osmg_link OWNER TO osmgress;
 GRANT ALL ON TABLE osmg_link TO postgres;
+
+INSERT INTO osmg_user(name, faction, password) values ('green', 'green', concat('{SHA}', encode(digest('green', 'sha256'), 'base64')));
+INSERT INTO osmg_user(name, faction, password) values ('blue', 'blue', concat('{SHA}', encode(digest('blue', 'sha256'), 'base64')));
