@@ -21,7 +21,7 @@ CREATE TABLE osmg_portal(
   id bigserial NOT NULL,
   osm_id bigint NOT NULL,
   owner_id bigint,
-  way geometry(Point,900913),
+  way geometry(Point,3857),
   name text,
   slots json,
   CONSTRAINT osmg_portal_owner_id_fkey FOREIGN KEY (owner_id)
