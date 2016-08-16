@@ -83,6 +83,13 @@ worker.worker2.port=8009
 worker.worker2.mount=/osmgress /osmgress/*
 ```
 
+osmgress data
+-------------
+
+Create the necessary tables for osmgress either by running the SQL file
+V1_0__initial_osmgress_tables.sql or by using flyway migrate to import it.
+
+
 Style
 =====
 
